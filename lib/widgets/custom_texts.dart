@@ -32,7 +32,6 @@ class HideableText extends StatefulWidget {
   final TextStyle textStyle;
   final bool enabled;
 
-  // TODO Change assertions!
   const HideableText(
       {Key key,
       this.text,

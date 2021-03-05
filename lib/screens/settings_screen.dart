@@ -25,7 +25,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:privacyidea_authenticator/utils/application_theme_utils.dart';
 import 'package:privacyidea_authenticator/utils/storage_utils.dart';
-import 'package:privacyidea_authenticator/widgets/password_dialogs.dart';
 import 'package:privacyidea_authenticator/widgets/settings_groups.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 
@@ -104,44 +103,9 @@ class SettingsScreenState extends State<SettingsScreen> {
             SettingsGroup(
               title: 'Security', // TODO Translate
               children: <Widget>[
-                ListTile(
-                  title: Text('Lock app'),
-                  // TODO Translate
-                  subtitle: Text('Ask for Password on app start'),
-                  // TODO Translate
-                  trailing: StreamBuilder<bool>(
-                    stream: isPasswordSet,
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-                        // Because initial data causes weird ui update.
-                        return Switch(
-                          value: false,
-                          onChanged: (value) {},
-                        );
-                      }
-
-                      return Switch(
-                        value: snapshot.data,
-                        onChanged: (value) async {
-                          if (snapshot.data && !value) {
-                            // Disable password
-                            _attemptRemovePassword(() async {
-                              await StorageUtil.deletePassword();
-                              _isPasswordSetController.add(false);
-                            });
-                          } else if (!snapshot.data && value) {
-                            // Enable password
-                            _setNewAppPassword();
-                          }
-                        },
-                      );
-                    },
-                  ),
-                ),
                 PreferenceBuilder<bool>(
                   preference: AppSettings.of(context).streamHideOpts(),
                   builder: (context, bool hideOTP) {
-                    print('Rebuild switch');
                     return ListTile(
                       title: Text('Hide passwords'),
                       // TODO Translate
@@ -179,30 +143,6 @@ class SettingsScreenState extends State<SettingsScreen> {
         ),
       ),
     );
-  }
-
-  void _setNewAppPassword() async {
-    String newPassword = await showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) => EnterNewPasswordDialog(),
-    );
-
-    if (newPassword != null) {
-      await StorageUtil.setPassword(newPassword);
-      _isPasswordSetController.add(true);
-    }
-  }
-
-  _attemptRemovePassword(VoidCallback callback) async {
-    if (!(await StorageUtil.isPasswordSet())) return;
-    await validatePassword(
-        context: context,
-        allowCancel: true,
-        success: () async {
-          await StorageUtil.deletePassword();
-          _isPasswordSetController.add(false);
-        });
   }
 
   void changeBrightness(Brightness value) {

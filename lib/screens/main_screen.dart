@@ -48,7 +48,6 @@ import 'package:privacyidea_authenticator/utils/localization_utils.dart';
 import 'package:privacyidea_authenticator/utils/parsing_utils.dart';
 import 'package:privacyidea_authenticator/utils/storage_utils.dart';
 import 'package:privacyidea_authenticator/utils/utils.dart';
-import 'package:privacyidea_authenticator/widgets/password_dialogs.dart';
 import 'package:privacyidea_authenticator/widgets/token_widgets.dart';
 import 'package:privacyidea_authenticator/widgets/two_step_dialog.dart';
 import 'package:uuid/uuid.dart';
@@ -65,50 +64,22 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
 class _MainScreenState extends State<MainScreen> with LifecycleMixin {
-  List<Token> _tokenList = List<Token>();
+  List<Token> _tokenList = [];
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  bool _isAppUnlocked = false;
-  bool _isCheckingForPassword = false;
-  final StreamController<bool> _verificationNotifier =
-      StreamController<bool>.broadcast();
 
   _MainScreenState() {
-    _checkPassword();
     _loadAllTokens();
     _loadFirebase();
   }
 
   @override
   void onPause() {
-    setState(() {
-      _isAppUnlocked = false;
-    });
+    // What TODO?
   }
 
   @override
   void onResume() {
-    _checkPassword();
-  }
-
-  // TODO
-  //  Hide stuff in background on iOS
-  _checkPassword() async {
-    if (_isCheckingForPassword) return;
-    _isCheckingForPassword = true;
-
-    if (await StorageUtil.isPasswordSet()) {
-      await validatePassword(
-          context: context, success: () => _onPasswordEntered(true));
-    } else {
-      setState(() => _isAppUnlocked = true);
-      _isCheckingForPassword = false;
-    }
-  }
-
-  _onPasswordEntered(bool isValid) async {
-    _verificationNotifier.add(isValid);
-    _isCheckingForPassword = false;
-    setState(() => this._isAppUnlocked = isValid);
+    // What TODO?
   }
 
   _loadFirebase() async {
@@ -144,14 +115,12 @@ class _MainScreenState extends State<MainScreen> with LifecycleMixin {
           child: Image.asset('res/logo/app_logo_light.png'),
         ),
       ),
-      body: _isAppUnlocked ? _buildTokenList() : Column(),
-      floatingActionButton: _isAppUnlocked
-          ? FloatingActionButton(
-              onPressed: () => _scanQRCode(),
-              tooltip: LTen.of(context).scanQRTooltip,
-              child: Icon(Icons.add),
-            )
-          : null,
+      body: _buildTokenList(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _scanQRCode(),
+        tooltip: LTen.of(context).scanQRTooltip,
+        child: Icon(Icons.add),
+      ),
     );
   }
 

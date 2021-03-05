@@ -28,7 +28,7 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^0.1.2
+  #  cupertino_icons: ^0.1.2
 
   # dependency for decoding (and encoding) strings to hex
   hex: ^0.1.2 # https://pub.dev/packages/hex#-installing-tab-
@@ -51,7 +51,10 @@ dependencies:
   # dependency for cryptographic algorithms
   pointycastle: ^1.0.2
   # dependency for changing the theme of the app
-  dynamic_theme: ^1.0.1 # https://pub.dev/packages/dynamic_theme
+  #  dynamic_theme: ^1.0.1 # https://pub.dev/packages/dynamic_theme
+  dynamic_theme:
+    git:
+      url: https://github.com/timosturm/dynamic_theme.git
   # dependency for push tokens https://github.com/privacyidea/privacyidea/wiki/concept%3A-PushToken
   # firebase_messaging: ^6.0.9
   firebase_messaging:
@@ -65,7 +68,7 @@ dependencies:
   # for displaying incoming push requests as notifications
   flutter_local_notifications: ^1.4.1 # https://pub.dev/packages/flutter_local_notifications#-installing-tab-
   # locking the app with a password
-#  passcode_screen: ^1.2.0
+  #  passcode_screen: ^1.2.0
   # managing lifecycle of app -> onPause, onResume
   flutterlifecyclehooks: ^1.0.0
   # manage settings
@@ -75,9 +78,9 @@ dependencies:
 
   flutter_localizations:
     sdk: flutter
-  flutter_cupertino_localizations: ^1.0.1
-  intl: ^0.16.0
-  intl_translation: any #^0.17.10
+  #  flutter_cupertino_localizations: ^1.0.1
+  intl: ^0.17.0
+#  intl_translation: any #^0.17.10
 
 dev_dependencies:
   flutter_driver:
