@@ -34,6 +34,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart';
+import 'package:flutterlifecyclehooks/flutterlifecyclehooks.dart';
 import 'package:package_info/package_info.dart';
 import 'package:pi_authenticator_legacy/pi_authenticator_legacy.dart';
 import 'package:privacyidea_authenticator/model/firebase_config.dart';
@@ -67,8 +68,8 @@ class MainScreen extends StatefulWidget {
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
-class _MainScreenState extends State<MainScreen> {
-  List<Token> _tokenList = List<Token>();
+class _MainScreenState extends State<MainScreen> with LifecycleMixin {
+  List<Token> _tokenList = [];
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   Timer _pollTimer;
@@ -204,6 +205,16 @@ class _MainScreenState extends State<MainScreen> {
   _loadEverything() async {
     await _loadTokenList();
     await _loadFirebase();
+  }
+
+  @override
+  void onPause() {
+    // What TODO?
+  }
+
+  @override
+  void onResume() {
+    // What TODO?
   }
 
   _loadFirebase() async {

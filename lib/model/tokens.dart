@@ -350,7 +350,7 @@ class PushRequestQueue {
 
   // The get and set methods are needed for serialization.
   List<PushRequest> get list {
-    _list ??= List();
+    _list ??= [];
     return _list;
   }
 

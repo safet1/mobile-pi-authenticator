@@ -29,12 +29,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:flutterlifecyclehooks/flutterlifecyclehooks.dart';
 import 'package:http/http.dart';
 import 'package:pi_authenticator_legacy/pi_authenticator_legacy.dart';
 import 'package:pointycastle/asymmetric/api.dart';
 import 'package:privacyidea_authenticator/model/firebase_config.dart';
 import 'package:privacyidea_authenticator/model/tokens.dart';
 import 'package:privacyidea_authenticator/screens/main_screen.dart';
+import 'package:privacyidea_authenticator/screens/settings_screen.dart';
 import 'package:privacyidea_authenticator/utils/application_theme_utils.dart';
 import 'package:privacyidea_authenticator/utils/crypto_utils.dart';
 import 'package:privacyidea_authenticator/utils/localization_utils.dart';
@@ -42,6 +44,8 @@ import 'package:privacyidea_authenticator/utils/network_utils.dart';
 import 'package:privacyidea_authenticator/utils/parsing_utils.dart';
 import 'package:privacyidea_authenticator/utils/storage_utils.dart';
 import 'package:privacyidea_authenticator/utils/utils.dart';
+import 'package:privacyidea_authenticator/widgets/custom_texts.dart';
+import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 
 typedef GetFBTokenCallback = Future<String> Function(FirebaseConfig);
 
@@ -211,7 +215,7 @@ abstract class _TokenWidgetState extends State<TokenWidget> {
   Widget _buildTile();
 }
 
-class _PushWidgetState extends _TokenWidgetState {
+class _PushWidgetState extends _TokenWidgetState with LifecycleMixin {
   _PushWidgetState(Token token) : super(token);
 
   PushToken get _token => super._token as PushToken;
@@ -234,44 +238,36 @@ class _PushWidgetState extends _TokenWidgetState {
   }
 
   @override
-  void initState() {
-    super.initState();
+  void onPause() {
+    // Nothing to right now
+  }
 
-    if (!_token.isRolledOut) {
-      SchedulerBinding.instance.addPostFrameCallback((_) => _rollOutToken());
-    }
+  @override
+  void onResume() async {
+    log(
+        "Push token may have received a request while app was "
+        "in background. Updating UI.",
+        name: "token_widgets.dart");
 
-    // TODO Check if onResume could be used here!
-    // Push requests that were received in background can only be saved to
-    // the storage, the ui must be updated here.
-    // ignore: missing_return
-    SystemChannels.lifecycle.setMessageHandler((msg) async {
-      PushToken t = await StorageUtil.loadToken(_token.id);
+    PushToken t = await StorageUtil.loadToken(_token.id);
 
-      // TODO Maybe we should simply reload all tokens on resume?
-      // This throws errors because the token [t] is null, why?
-      // The error does not seem to break anything
-      // It indicates that this method is executed after the token was removed.
-      if (t == null) return;
+    _deleteExpiredRequests(t);
 
-      if (msg == "AppLifecycleState.resumed" && t.pushRequests.isNotEmpty) {
-        log(
-            "Push token may have received a request while app was "
-            "in background. Updating UI.",
-            name: "token_widgets.dart");
+    await _saveThisToken();
 
-        _deleteExpiredRequests(t);
+    // FIXME This does not work, maybe we should reload all tokens on resume?
+    // TODO Check this behaviour!
+    setState(() => _token = t);
+  }
 
-        setState(() {
-          _token = t;
-          _saveThisToken();
-        });
-      }
-    });
+  @override
+  void afterFirstRender() {
+    // super.afterFirstRender();
+    if (!_token.isRolledOut) _rollOutToken();
 
     // Delete expired push requests periodically.
     _deleteTimer = Timer.periodic(Duration(seconds: 30), (_) {
-      if (_token.pushRequests != null && _token.pushRequests.isNotEmpty) {
+      if (_token.isRolledOut && _token.pushRequests.isNotEmpty) {
         _deleteExpiredRequests(_token);
         _saveThisToken();
         setState(() {}); // Update ui
@@ -700,9 +696,23 @@ class _HotpWidgetState extends _OTPTokenWidgetState {
     return Stack(
       children: <Widget>[
         ListTile(
-          title: Text(
-            insertCharAt(_otpValue, " ", _token.digits ~/ 2),
-            style: Theme.of(context).textTheme.headline4,
+          title: PreferenceBuilder<bool>(
+            preference: AppSettings.of(context).streamHideOpts(),
+            builder: (context, bool hide) {
+              return HideableText(
+                text: insertCharAt(_otpValue, " ", _token.digits ~/ 2),
+                hiddenText: insertCharAt(
+                    "\u2022" * _token.digits, " ", _token.digits ~/ 2),
+                textScaleFactor: 2.2,
+                hideDuration: Duration(seconds: 4),
+                textStyle: TextStyle(
+                  fontFamily: "monospace",
+                  fontWeight: FontWeight.bold,
+                ),
+//                style: Theme.of(context).textTheme.headline4, // TODO What to use?
+                enabled: hide,
+              );
+            },
           ),
           subtitle: Text(
             _label,
@@ -728,7 +738,7 @@ class _HotpWidgetState extends _OTPTokenWidgetState {
 }
 
 class _TotpWidgetState extends _OTPTokenWidgetState
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, LifecycleMixin {
   AnimationController
       controller; // Controller for animating the LinearProgressAnimator
 
@@ -743,17 +753,17 @@ class _TotpWidgetState extends _OTPTokenWidgetState
     });
   }
 
+  /// Calculate the progress of the LinearProgressIndicator depending on the
+  /// current time. The Indicator takes values in [0.0, 1.0].
+  double _getCurrentProgress() {
+    int unixTime = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
+
+    return (unixTime % (_token.period)) * (1 / _token.period);
+  }
+
   @override
   void initState() {
     super.initState();
-
-    /// Calculate the progress of the LinearProgressIndicator depending on the
-    /// current time. The Indicator takes values in [0.0, 1.0].
-    double getCurrentProgress() {
-      int unixTime = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
-
-      return (unixTime % (_token.period)) * (1 / _token.period);
-    }
 
     controller = AnimationController(
       duration: Duration(seconds: _token.period),
@@ -770,25 +780,22 @@ class _TotpWidgetState extends _OTPTokenWidgetState
       ..addStatusListener((status) {
         // Add listener to restart the animation after the period, also updates the otp value.
         if (status == AnimationStatus.completed) {
-          controller.forward(from: getCurrentProgress());
+          controller.forward(from: _getCurrentProgress());
           _updateOtpValue();
         }
       })
-      ..forward(from: getCurrentProgress()); // Start the animation.
+      ..forward(from: _getCurrentProgress()); // Start the animation.
+  }
 
-    // Update the otp value when the android app resumes, this prevents outdated otp values
-    // ignore: missing_return
-    SystemChannels.lifecycle.setMessageHandler((msg) {
-      log(
-        "SystemChannels:",
-        name: "totp_widgets.dart",
-        error: msg,
-      );
-      if (msg == AppLifecycleState.resumed.toString()) {
-        _updateOtpValue();
-        controller.forward(from: getCurrentProgress());
-      }
-    });
+  @override
+  void onPause() {
+// Nothing to do right now
+  }
+
+  @override
+  void onResume() {
+    _updateOtpValue();
+    controller.forward(from: _getCurrentProgress());
   }
 
   @override
@@ -802,9 +809,23 @@ class _TotpWidgetState extends _OTPTokenWidgetState
     return Column(
       children: <Widget>[
         ListTile(
-          title: Text(
-            insertCharAt(_otpValue, " ", _token.digits ~/ 2),
-            style: Theme.of(context).textTheme.headline4,
+          title: PreferenceBuilder<bool>(
+            preference: AppSettings.of(context).streamHideOpts(),
+            builder: (context, bool hide) {
+              return HideableText(
+                text: insertCharAt(_otpValue, " ", _token.digits ~/ 2),
+                hiddenText: insertCharAt(
+                    "\u2022" * _token.digits, " ", _token.digits ~/ 2),
+                textScaleFactor: 2.2,
+                hideDuration: Duration(seconds: 4),
+                textStyle: TextStyle(
+                  fontFamily: "monospace",
+                  fontWeight: FontWeight.bold,
+                ),
+//                style: Theme.of(context).textTheme.headline4, // TODO What to use?
+                enabled: hide,
+              );
+            },
           ),
           subtitle: Text(
             _label,

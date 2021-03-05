@@ -28,25 +28,33 @@ clearLicenses() {
   LicenseRegistry.reset();
 }
 
+Map<String, String> _licenseMap = {
+  'privacyIDEA Authenticator': _PI_AUTHENTICATOR_LICENSE,
+  'dart-hex': _DART_HEX_LICENSE,
+  'dart-base32': _DART_BASE32_LICENSE,
+  'otp': _DART_OTP_LICENSE,
+  'dart-uuid': _DART_UUID_LICENSE,
+  'json_serializabel': _JSON_SERIALIZABLE_LICENSE,
+  'flutter_secure_storage': _FLUTTER_SECURE_STORAGE_LICENSE,
+  'flutter_slidable': _FLUTTER_SLIDABLE_LICENSE,
+  'intl': _INTL_LICENSE,
+  'package_info': _PACKAGE_INFO_LICENSE,
+  'pointycastle': _POINTYCASTLE_LICENSE,
+  'dynamic_theme': _DYNAMIC_THEME_LICENSE,
+  'flutterfire': _FLUTTERFIRE_LICENSE,
+  // TODO The code was changed locally, license may have to be changed accordingly.
+  'firebase_core': _FIREBASE_CORE_LICENSE,
+  'asn1lib': _ASN1LIB_LICENSE,
+  'http': _HTTP_LICENSE,
+  'flutter_local_notifications#': _FLUTTER_LOCAL_NOTIFICATIONS_LICENSE,
+  'flutterlifecyclehooks': _FLUTTER_LIFECYCLE_HOOKS_LICENSE,
+  'streaming_shared_preferences': _STREAMING_SHARED_PREFERENCES_LICENSE,
+  'url_launcher': _URL_LAUNCHER_LICENSE,
+  'dart_mutex': _DART_MUTEX_LICENSE,
+};
+
 addAllLicenses() {
-  _addNewLicense("privacyIDEA Authenticator", _PI_AUTHENTICATOR_LICENSE);
-  _addNewLicense("dart-hex", _DART_HEX_LICENSE);
-  _addNewLicense("dart-base32", _DART_BASE32_LICENSE);
-  _addNewLicense("otp", _DART_OTP_LICENSE);
-  _addNewLicense("dart-uuid", _DART_UUID_LICENSE);
-  _addNewLicense("json_serializabel", _JSON_SERIALIZABLE_LICENSE);
-  _addNewLicense("flutter_secure_storage", _FLUTTER_SECURE_STORAGE_LICENSE);
-  _addNewLicense("flutter_slidable", _FLUTTER_SLIDABLE_LICENSE);
-  _addNewLicense("intl", _INTL_LICENSE);
-  _addNewLicense("package_info", _PACKAGE_INFO_LICENSE);
-  _addNewLicense("pointycastle", _POINTYCASTLE_LICENSE);
-  _addNewLicense("dynamic_theme", _DYNAMIC_THEME_LICENSE);
-  _addNewLicense("flutterfire", _FLUTTERFIRE_LICENSE);
-  _addNewLicense("firebase_core", _FIREBASE_CORE_LICENSE);
-  _addNewLicense('asn1lib', _ASN1LIB_LICENSE);
-  _addNewLicense('http', _HTTP_LICENSE);
-  _addNewLicense('flutter_local_notifications#', _FLUTTER_LOCAL_NOTIFICATIONS);
-  _addNewLicense('dart-mutex', _DART_MUTEX_LICENSE);
+  _licenseMap.forEach((key, value) => _addNewLicense(key, value));
 }
 
 _addNewLicense(String packageName, String licenseText) {
@@ -54,6 +62,59 @@ _addNewLicense(String packageName, String licenseText) {
     yield LicenseEntryWithLineBreaks(<String>[packageName], licenseText);
   });
 }
+
+const String _URL_LAUNCHER_LICENSE = '''
+// Copyright 2017 The Chromium Authors. All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//    * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//    * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//    * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+''';
+
+const String _STREAMING_SHARED_PREFERENCES_LICENSE = '''
+Copyright 2019 Iiro Krankka
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+''';
+
+const String _FLUTTER_LIFECYCLE_HOOKS_LICENSE = '''
+Copyright <2020> <spideythewebhead>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+''';
 
 const String _DART_MUTEX_LICENSE = '''
 Copyright (c) 2016, Hoylen Sue.
@@ -82,7 +143,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ''';
 
-const String _FLUTTER_LOCAL_NOTIFICATIONS = '''
+const String _FLUTTER_LOCAL_NOTIFICATIONS_LICENSE = '''
 Copyright 2018 Michael Bui. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
