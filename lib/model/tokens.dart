@@ -27,6 +27,10 @@ import 'package:privacyidea_authenticator/utils/utils.dart';
 part 'tokens.g.dart';
 
 abstract class Token {
+  bool _isLocked;
+  bool _lockCanBeToggled; // If this is true, the value of [isLocked] should not
+  // be changed!
+
   String _tokenVersion =
       "v1.0.0"; // The version of this token, this is used for serialization.
   String _label; // the name of the token, it cannot be uses as an identifier
@@ -48,7 +52,37 @@ abstract class Token {
 
   String get issuer => _issuer == null ? "" : Uri.decodeFull(_issuer);
 
-  Token(this._label, this._issuer, this._id, this.type);
+  bool get lockCanBeToggled => _lockCanBeToggled;
+
+  bool get isLocked => _isLocked;
+
+  set isLocked(bool value) {
+    if (_lockCanBeToggled) {
+      _isLocked = value;
+    } else {
+      ArgumentError.value(
+          value,
+          'isLocked',
+          'This value may not be changed, '
+              'because [_lockCanBeToggled] is False!');
+    }
+  }
+
+//  Token(this._label, this._issuer, this._id, this.type, this._isLocked,
+//      this._lockCanBeToggled) ;
+
+  Token(String label, String issuer, String id, String type, bool isLocked,
+      bool lockCanBeToggled)
+      : assert(label != null),
+        assert(issuer != null),
+        assert(id != null),
+        assert(type != null),
+        this._label = label,
+        this._issuer = issuer,
+        this._id = id,
+        this.type = type,
+        this._isLocked = isLocked ?? false,
+        this._lockCanBeToggled = lockCanBeToggled ?? true;
 
   @override
   String toString() {
@@ -70,9 +104,9 @@ abstract class OTPToken extends Token {
 
   String get secret => _secret;
 
-  OTPToken(String label, String issuer, String id, String type, this._algorithm,
-      this._digits, this._secret)
-      : super(label, issuer, id, type);
+  OTPToken(String label, String issuer, String id, String type, isLocked,
+      lockCanBeToggled, this._algorithm, this._digits, this._secret)
+      : super(label, issuer, id, type, isLocked, lockCanBeToggled);
 
   @override
   String toString() {
@@ -96,10 +130,12 @@ class HOTPToken extends OTPToken {
       Algorithms algorithm,
       int digits,
       String secret,
-      int counter = 0})
+      int counter = 0,
+      isLocked,
+      lockCanBeToggled})
       : this._counter = counter,
-        super(label, issuer, id, enumAsString(TokenTypes.HOTP), algorithm,
-            digits, secret);
+        super(label, issuer, id, enumAsString(TokenTypes.HOTP), isLocked,
+            lockCanBeToggled, algorithm, digits, secret);
 
   @override
   String toString() {
@@ -129,10 +165,12 @@ class TOTPToken extends OTPToken {
       Algorithms algorithm,
       int digits,
       String secret,
-      int period})
+      int period,
+      isLocked,
+      lockCanBeToggled})
       : this._period = period,
-        super(label, issuer, id, enumAsString(TokenTypes.TOTP), algorithm,
-            digits, secret);
+        super(label, issuer, id, enumAsString(TokenTypes.TOTP), isLocked,
+            lockCanBeToggled, algorithm, digits, secret);
 
   @override
   String toString() {
@@ -239,6 +277,8 @@ class PushToken extends Token {
     String serial,
     String issuer,
     String id,
+    isLocked,
+    lockCanBeToggled,
     // 2. step
     bool sslVerify,
     String enrollmentCredentials,
@@ -249,7 +289,8 @@ class PushToken extends Token {
         this._enrollmentCredentials = enrollmentCredentials,
         this.url = url,
         this._expirationDate = expirationDate,
-        super(label, issuer, id, enumAsString(TokenTypes.PIPUSH));
+        super(label, issuer, id, enumAsString(TokenTypes.PIPUSH), isLocked,
+            lockCanBeToggled);
 
   @override
   bool operator ==(Object other) =>
