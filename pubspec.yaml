@@ -52,8 +52,10 @@ dependencies:
   ##### not null-safe:
 
   ## pre-release
-  base32: ^1.1.1 # https://pub.dev/packages/base32
-  otp: ^2.0.3 # https://pub.dev/packages/otp
+#  base32: ^1.1.1 # https://pub.dev/packages/base32
+  base32: ^2.0.0-nullsafety.1
+#  otp: ^2.0.3 # https://pub.dev/packages/otp
+  otp: ^3.0.0-nullsafety.0
   barcode_scan: ^2.0.1
   flutter_slidable: ^0.5.4
   pointycastle: ^1.0.2
@@ -84,8 +86,10 @@ dependencies:
   firebase_core: ^0.4.0
 
 
-
-
+# Overwrite because flutter driver depends on crypto <? and uuid depends on crypto >=3
+dependency_overrides:
+  crypto: ">=3.0.0"
+  args: ">=2.0.0"
 
 
 
