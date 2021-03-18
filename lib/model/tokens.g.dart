@@ -9,6 +9,8 @@ part of 'tokens.dart';
 HOTPToken _$HOTPTokenFromJson(Map<String, dynamic> json) {
   return HOTPToken(
     label: json['label'] as String,
+    isLocked: json['isLocked'] as bool,
+    lockCanBeToggled: json['lockCanBeToggled'] as bool,
     issuer: json['issuer'] as String,
     id: json['id'] as String,
     algorithm: _$enumDecodeNullable(_$AlgorithmsEnumMap, json['algorithm']),
@@ -20,6 +22,8 @@ HOTPToken _$HOTPTokenFromJson(Map<String, dynamic> json) {
 
 Map<String, dynamic> _$HOTPTokenToJson(HOTPToken instance) => <String, dynamic>{
       'type': instance.type,
+      'isLocked': instance.isLocked,
+      'lockCanBeToggled': instance.lockCanBeToggled,
       'label': instance.label,
       'id': instance.id,
       'issuer': instance.issuer,
@@ -70,6 +74,8 @@ const _$AlgorithmsEnumMap = {
 TOTPToken _$TOTPTokenFromJson(Map<String, dynamic> json) {
   return TOTPToken(
     label: json['label'] as String,
+    isLocked: json['isLocked'] as bool,
+    lockCanBeToggled: json['lockCanBeToggled'] as bool,
     issuer: json['issuer'] as String,
     id: json['id'] as String,
     algorithm: _$enumDecodeNullable(_$AlgorithmsEnumMap, json['algorithm']),
@@ -82,6 +88,8 @@ TOTPToken _$TOTPTokenFromJson(Map<String, dynamic> json) {
 Map<String, dynamic> _$TOTPTokenToJson(TOTPToken instance) => <String, dynamic>{
       'type': instance.type,
       'label': instance.label,
+      'isLocked': instance.isLocked,
+      'lockCanBeToggled': instance.lockCanBeToggled,
       'id': instance.id,
       'issuer': instance.issuer,
       'algorithm': _$AlgorithmsEnumMap[instance.algorithm],
@@ -93,6 +101,8 @@ Map<String, dynamic> _$TOTPTokenToJson(TOTPToken instance) => <String, dynamic>{
 PushToken _$PushTokenFromJson(Map<String, dynamic> json) {
   return PushToken(
     label: json['label'] as String,
+    isLocked: json['isLocked'] as bool,
+    lockCanBeToggled: json['lockCanBeToggled'] as bool,
     serial: json['serial'] as String,
     issuer: json['issuer'] as String,
     id: json['id'] as String,
@@ -123,6 +133,8 @@ Map<String, dynamic> _$PushTokenToJson(PushToken instance) => <String, dynamic>{
       'label': instance.label,
       'id': instance.id,
       'issuer': instance.issuer,
+      'isLocked': instance.isLocked,
+      'lockCanBeToggled': instance.lockCanBeToggled,
       'url': instance.url?.toString(),
       'isRolledOut': instance.isRolledOut,
       'publicServerKey': instance.publicServerKey,
@@ -134,86 +146,4 @@ Map<String, dynamic> _$PushTokenToJson(PushToken instance) => <String, dynamic>{
       'expirationDate': instance.expirationDate?.toIso8601String(),
       'pushRequests': instance.pushRequests,
       'knownPushRequests': instance.knownPushRequests,
-    };
-
-PushRequest _$PushRequestFromJson(Map<String, dynamic> json) {
-  return PushRequest(
-    title: json['title'] as String,
-    question: json['question'] as String,
-    uri: json['uri'] == null ? null : Uri.parse(json['uri'] as String),
-    nonce: json['nonce'] as String,
-    sslVerify: json['sslVerify'] as bool,
-    id: json['id'] as int,
-    expirationDate: json['expirationDate'] == null
-        ? null
-        : DateTime.parse(json['expirationDate'] as String),
-  );
-}
-
-Map<String, dynamic> _$PushRequestToJson(PushRequest instance) =>
-    <String, dynamic>{
-      'expirationDate': instance.expirationDate?.toIso8601String(),
-      'id': instance.id,
-      'nonce': instance.nonce,
-      'sslVerify': instance.sslVerify,
-      'uri': instance.uri?.toString(),
-      'question': instance.question,
-      'title': instance.title,
-    };
-
-PushRequestQueue _$PushRequestQueueFromJson(Map<String, dynamic> json) {
-  return PushRequestQueue()
-    ..list = (json['list'] as List)
-        ?.map((e) =>
-            e == null ? null : PushRequest.fromJson(e as Map<String, dynamic>))
-        ?.toList();
-}
-
-Map<String, dynamic> _$PushRequestQueueToJson(PushRequestQueue instance) =>
-    <String, dynamic>{
-      'list': instance.list,
-    };
-
-SerializableRSAPublicKey _$SerializableRSAPublicKeyFromJson(
-    Map<String, dynamic> json) {
-  return SerializableRSAPublicKey(
-    json['modulus'] == null ? null : BigInt.parse(json['modulus'] as String),
-    json['exponent'] == null ? null : BigInt.parse(json['exponent'] as String),
-  );
-}
-
-Map<String, dynamic> _$SerializableRSAPublicKeyToJson(
-        SerializableRSAPublicKey instance) =>
-    <String, dynamic>{
-      'modulus': instance.modulus?.toString(),
-      'exponent': instance.exponent?.toString(),
-    };
-
-SerializableRSAPrivateKey _$SerializableRSAPrivateKeyFromJson(
-    Map<String, dynamic> json) {
-  return SerializableRSAPrivateKey(
-    json['modulus'] == null ? null : BigInt.parse(json['modulus'] as String),
-    json['exponent'] == null ? null : BigInt.parse(json['exponent'] as String),
-    json['p'] == null ? null : BigInt.parse(json['p'] as String),
-    json['q'] == null ? null : BigInt.parse(json['q'] as String),
-  );
-}
-
-Map<String, dynamic> _$SerializableRSAPrivateKeyToJson(
-        SerializableRSAPrivateKey instance) =>
-    <String, dynamic>{
-      'modulus': instance.modulus?.toString(),
-      'exponent': instance.exponent?.toString(),
-      'p': instance.p?.toString(),
-      'q': instance.q?.toString(),
-    };
-
-CustomIntBuffer _$CustomIntBufferFromJson(Map<String, dynamic> json) {
-  return CustomIntBuffer()
-    ..list = (json['list'] as List)?.map((e) => e as int)?.toList();
-}
-
-Map<String, dynamic> _$CustomIntBufferToJson(CustomIntBuffer instance) =>
-    <String, dynamic>{
-      'list': instance.list,
     };

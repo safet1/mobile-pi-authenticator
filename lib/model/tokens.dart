@@ -24,6 +24,8 @@ import 'package:privacyidea_authenticator/utils/identifiers.dart';
 import 'package:privacyidea_authenticator/utils/parsing_utils.dart';
 import 'package:privacyidea_authenticator/utils/utils.dart';
 
+import 'push_request.dart';
+
 part 'tokens.g.dart';
 
 abstract class Token {
@@ -68,17 +70,12 @@ abstract class Token {
     }
   }
 
-//  Token(this._label, this._issuer, this._id, this.type, this._isLocked,
-//      this._lockCanBeToggled) ;
-
   Token(String label, String issuer, String id, String type, bool isLocked,
       bool lockCanBeToggled)
-      : assert(label != null),
-        assert(issuer != null),
-        assert(id != null),
+      : assert(id != null),
         assert(type != null),
-        this._label = label,
-        this._issuer = issuer,
+        this._issuer = issuer ?? "",
+        this._label = label ?? "",
         this._id = id,
         this.type = type,
         this._isLocked = isLocked ?? false,
@@ -316,210 +313,4 @@ class PushToken extends Token {
       _$PushTokenFromJson(json);
 
   Map<String, dynamic> toJson() => _$PushTokenToJson(this);
-}
-
-@JsonSerializable()
-class PushRequest {
-  String _title;
-  String _question;
-
-  int _id;
-
-  Uri _uri;
-  String _nonce;
-  bool _sslVerify;
-
-  DateTime _expirationDate;
-
-  DateTime get expirationDate => _expirationDate;
-
-  int get id => _id;
-
-  String get nonce => _nonce;
-
-  bool get sslVerify => _sslVerify;
-
-  Uri get uri => _uri;
-
-  String get question => _question;
-
-  String get title => _title;
-
-  PushRequest(
-      {String title,
-      String question,
-      Uri uri,
-      String nonce,
-      bool sslVerify,
-      int id,
-      DateTime expirationDate})
-      : this._title = title,
-        this._question = question,
-        this._uri = uri,
-        this._nonce = nonce,
-        this._sslVerify = sslVerify,
-        this._id = id,
-        this._expirationDate = expirationDate;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is PushRequest &&
-          runtimeType == other.runtimeType &&
-          _id == other._id;
-
-  @override
-  int get hashCode => _id.hashCode;
-
-  @override
-  String toString() {
-    return 'PushRequest{_title: $_title, _question: $_question,'
-        ' _id: $_id, _uri: $_uri, _nonce: $_nonce, _sslVerify: $_sslVerify}';
-  }
-
-  factory PushRequest.fromJson(Map<String, dynamic> json) =>
-      _$PushRequestFromJson(json);
-
-  Map<String, dynamic> toJson() => _$PushRequestToJson(this);
-}
-
-@JsonSerializable()
-class PushRequestQueue {
-  PushRequestQueue();
-
-  List<PushRequest> _list;
-
-  // The get and set methods are needed for serialization.
-  List<PushRequest> get list {
-    _list ??= [];
-    return _list;
-  }
-
-  set list(List<PushRequest> l) {
-    if (_list != null) {
-      throw ArgumentError(
-          "Initializing [list] in [PushRequestQueue] is only allowed once.");
-    }
-
-    this._list = l;
-  }
-
-  int get length => list.length;
-
-  void forEach(void f(PushRequest request)) => list.forEach((f));
-
-  void removeWhere(bool f(PushRequest request)) => list.removeWhere(f);
-
-  Iterable<PushRequest> where(bool f(PushRequest request)) => _list.where(f);
-
-  bool any(bool f(PushRequest element)) => _list.any(f);
-
-  void remove(PushRequest request) => _list.remove(request);
-
-  bool get isEmpty => list.isEmpty;
-
-  bool get isNotEmpty => list.isNotEmpty;
-
-  bool contains(PushRequest r) => _list.contains(r);
-
-  void add(PushRequest pushRequest) => list.add(pushRequest);
-
-  PushRequest peek() => list.first;
-
-  PushRequest pop() => list.removeAt(0);
-
-  @override
-  String toString() {
-    return 'PushRequestQueue{_list: $list}';
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is PushRequestQueue &&
-          runtimeType == other.runtimeType &&
-          _listsAreEqual(list, other.list);
-
-  bool _listsAreEqual(List<PushRequest> l1, List<PushRequest> l2) {
-    if (l1.length != l2.length) return false;
-
-    for (int i = 0; i < l1.length - 1; i++) {
-      if (l1[i] != l2[i]) return false;
-    }
-
-    return true;
-  }
-
-  @override
-  int get hashCode => list.hashCode;
-
-  factory PushRequestQueue.fromJson(Map<String, dynamic> json) =>
-      _$PushRequestQueueFromJson(json);
-
-  Map<String, dynamic> toJson() => _$PushRequestQueueToJson(this);
-}
-
-@JsonSerializable()
-class SerializableRSAPublicKey extends RSAPublicKey {
-  SerializableRSAPublicKey(BigInt modulus, BigInt exponent)
-      : super(modulus, exponent);
-
-  factory SerializableRSAPublicKey.fromJson(Map<String, dynamic> json) =>
-      _$SerializableRSAPublicKeyFromJson(json);
-
-  Map<String, dynamic> toJson() => _$SerializableRSAPublicKeyToJson(this);
-}
-
-@JsonSerializable()
-class SerializableRSAPrivateKey extends RSAPrivateKey {
-  SerializableRSAPrivateKey(BigInt modulus, BigInt exponent, BigInt p, BigInt q)
-      : super(modulus, exponent, p, q);
-
-  factory SerializableRSAPrivateKey.fromJson(Map<String, dynamic> json) =>
-      _$SerializableRSAPrivateKeyFromJson(json);
-
-  Map<String, dynamic> toJson() => _$SerializableRSAPrivateKeyToJson(this);
-}
-
-@JsonSerializable()
-class CustomIntBuffer {
-  final int maxSize = 30;
-
-  CustomIntBuffer();
-
-  List<int> _list;
-
-  // The get and set methods are needed for serialization.
-  List<int> get list {
-    _list ??= List();
-    return _list;
-  }
-
-  set list(List<int> l) {
-    if (_list != null) {
-      throw ArgumentError(
-          "Initializing [list] in [CustomStringBuffer] is only allowed once.");
-    }
-
-    if (l.length > maxSize) {
-      throw ArgumentError(
-          'The list $l is to long for a buffer of size $maxSize');
-    }
-
-    this._list = l;
-  }
-
-  void put(int value) {
-    if (_list.length >= maxSize) list.removeAt(0);
-    _list.add(value);
-  }
-
-  int get length => _list.length;
-
-  bool contains(int value) => _list.contains(value);
-
-  factory CustomIntBuffer.fromJson(Map<String, dynamic> json) =>
-      _$CustomIntBufferFromJson(json);
-
-  Map<String, dynamic> toJson() => _$CustomIntBufferToJson(this);
 }
