@@ -47,34 +47,42 @@ void _testInsertCharAt() {
 }
 
 void _testCalculateHotpValue() {
+  String label = 'test_label';
+  String issuer = 'test_issuer';
+  String id = 'test_id';
+
   group("Calculate hotp values", () {
     group("different couters 6 digits", () {
       // We need to use different tokens here, because simply incrementing the
       // counter between all method calls leads to a race condition
       HOTPToken token0 = HOTPToken(
-          label: null,
-          issuer: null,
+          label: label,
+          issuer: issuer,
+          id: id,
           algorithm: Algorithms.SHA1,
           digits: 6,
           secret: encodeSecretAs(utf8.encode("secret"), Encodings.base32),
           counter: 0);
       HOTPToken token1 = HOTPToken(
-          label: null,
-          issuer: null,
+          label: label,
+          issuer: issuer,
+          id: id,
           algorithm: Algorithms.SHA1,
           digits: 6,
           secret: encodeSecretAs(utf8.encode("secret"), Encodings.base32),
           counter: 1);
       HOTPToken token2 = HOTPToken(
-          label: null,
-          issuer: null,
+          label: label,
+          issuer: issuer,
+          id: id,
           algorithm: Algorithms.SHA1,
           digits: 6,
           secret: encodeSecretAs(utf8.encode("secret"), Encodings.base32),
           counter: 2);
       HOTPToken token8 = HOTPToken(
-          label: null,
-          issuer: null,
+          label: label,
+          issuer: issuer,
+          id: id,
           algorithm: Algorithms.SHA1,
           digits: 6,
           secret: encodeSecretAs(utf8.encode("secret"), Encodings.base32),
@@ -97,29 +105,33 @@ void _testCalculateHotpValue() {
       // We need to use different tokens here, because simply incrementing the
       // counter between all method calls leads to a race condition
       HOTPToken token0 = HOTPToken(
-          label: null,
-          issuer: null,
+          label: label,
+          issuer: issuer,
+          id: id,
           algorithm: Algorithms.SHA1,
           digits: 8,
           secret: encodeSecretAs(utf8.encode("secret"), Encodings.base32),
           counter: 0);
       HOTPToken token1 = HOTPToken(
-          label: null,
-          issuer: null,
+          label: label,
+          issuer: issuer,
+          id: id,
           algorithm: Algorithms.SHA1,
           digits: 8,
           secret: encodeSecretAs(utf8.encode("secret"), Encodings.base32),
           counter: 1);
       HOTPToken token2 = HOTPToken(
-          label: null,
-          issuer: null,
+          label: label,
+          issuer: issuer,
+          id: id,
           algorithm: Algorithms.SHA1,
           digits: 8,
           secret: encodeSecretAs(utf8.encode("secret"), Encodings.base32),
           counter: 2);
       HOTPToken token8 = HOTPToken(
-          label: null,
-          issuer: null,
+          label: label,
+          issuer: issuer,
+          id: id,
           algorithm: Algorithms.SHA1,
           digits: 8,
           secret: encodeSecretAs(utf8.encode("secret"), Encodings.base32),
@@ -142,22 +154,25 @@ void _testCalculateHotpValue() {
       // We need to use different tokens here, because simply incrementing the
       // counter between all method calls leads to a race condition
       HOTPToken token0 = HOTPToken(
-          label: null,
-          issuer: null,
+          label: label,
+          issuer: issuer,
+          id: id,
           algorithm: Algorithms.SHA1,
           digits: 6,
           secret: encodeSecretAs(utf8.encode("Secret"), Encodings.base32),
           counter: 0);
       HOTPToken token1 = HOTPToken(
-          label: null,
-          issuer: null,
+          label: label,
+          issuer: issuer,
+          id: id,
           algorithm: Algorithms.SHA256,
           digits: 6,
           secret: encodeSecretAs(utf8.encode("Secret"), Encodings.base32),
           counter: 0);
       HOTPToken token2 = HOTPToken(
-          label: null,
-          issuer: null,
+          label: label,
+          issuer: issuer,
+          id: id,
           algorithm: Algorithms.SHA512,
           digits: 6,
           secret: encodeSecretAs(utf8.encode("Secret"), Encodings.base32),
@@ -176,22 +191,25 @@ void _testCalculateHotpValue() {
       // We need to use different tokens here, because simply incrementing the
       // counter between all method calls leads to a race condition
       HOTPToken token0 = HOTPToken(
-          label: null,
-          issuer: null,
+          label: label,
+          issuer: issuer,
+          id: id,
           algorithm: Algorithms.SHA1,
           digits: 8,
           secret: encodeSecretAs(utf8.encode("Secret"), Encodings.base32),
           counter: 0);
       HOTPToken token1 = HOTPToken(
-          label: null,
-          issuer: null,
+          label: label,
+          issuer: issuer,
+          id: id,
           algorithm: Algorithms.SHA256,
           digits: 8,
           secret: encodeSecretAs(utf8.encode("Secret"), Encodings.base32),
           counter: 0);
       HOTPToken token2 = HOTPToken(
-          label: null,
-          issuer: null,
+          label: label,
+          issuer: issuer,
+          id: id,
           algorithm: Algorithms.SHA512,
           digits: 8,
           secret: encodeSecretAs(utf8.encode("Secret"), Encodings.base32),

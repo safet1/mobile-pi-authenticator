@@ -38,6 +38,7 @@ import 'package:flutterlifecyclehooks/flutterlifecyclehooks.dart';
 import 'package:package_info/package_info.dart';
 import 'package:pi_authenticator_legacy/pi_authenticator_legacy.dart';
 import 'package:privacyidea_authenticator/model/firebase_config.dart';
+import 'package:privacyidea_authenticator/model/push_request.dart';
 import 'package:privacyidea_authenticator/model/tokens.dart';
 import 'package:privacyidea_authenticator/screens/add_manually_screen.dart';
 import 'package:privacyidea_authenticator/screens/changelog_screen.dart';

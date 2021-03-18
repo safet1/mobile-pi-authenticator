@@ -21,6 +21,7 @@
 import 'dart:collection';
 import 'dart:convert';
 
+import 'package:privacyidea_authenticator/model/push_request.dart';
 import 'package:privacyidea_authenticator/model/tokens.dart';
 import 'package:test/test.dart';
 import 'package:uuid/uuid.dart';
