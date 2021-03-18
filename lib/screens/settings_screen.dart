@@ -261,7 +261,6 @@ class SettingsScreenState extends State<SettingsScreen> {
 
 class AppSettings extends InheritedWidget {
   // Preferences
-  static String _prefHideOtps = 'KEY_HIDE_OTPS';
   static String _prefEnablePoll = 'KEY_ENABLE_POLLING';
   static String _showGuideOnStartKey = 'KEY_SHOW_GUIDE_ON_START';
 
@@ -272,8 +271,7 @@ class AppSettings extends InheritedWidget {
       context.dependOnInheritedWidgetOfExactType<AppSettings>();
 
   AppSettings({Widget child, StreamingSharedPreferences preferences})
-      : _hideOpts = preferences.getBool(_prefHideOtps, defaultValue: false),
-        _enablePolling =
+      : _enablePolling =
             preferences.getBool(_prefEnablePoll, defaultValue: false),
         isTestMode =
             const bool.fromEnvironment('testing_mode', defaultValue: false),
@@ -281,16 +279,11 @@ class AppSettings extends InheritedWidget {
             preferences.getBool(_showGuideOnStartKey, defaultValue: true),
         super(child: child);
 
-  final Preference<bool> _hideOpts;
   final Preference<bool> _enablePolling;
   final Preference<bool> _showGuideOnStart;
   final bool isTestMode;
 
-  Stream<bool> streamHideOpts() => _hideOpts;
-
   Stream<bool> streamEnablePolling() => _enablePolling;
-
-  void setHideOpts(bool value) => _hideOpts.setValue(value);
 
   void setEnablePolling(bool value) => _enablePolling.setValue(value);
 

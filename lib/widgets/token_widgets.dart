@@ -37,7 +37,6 @@ import 'package:privacyidea_authenticator/model/firebase_config.dart';
 import 'package:privacyidea_authenticator/model/push_request.dart';
 import 'package:privacyidea_authenticator/model/tokens.dart';
 import 'package:privacyidea_authenticator/screens/main_screen.dart';
-import 'package:privacyidea_authenticator/screens/settings_screen.dart';
 import 'package:privacyidea_authenticator/utils/application_theme_utils.dart';
 import 'package:privacyidea_authenticator/utils/crypto_utils.dart';
 import 'package:privacyidea_authenticator/utils/localization_utils.dart';
@@ -46,7 +45,6 @@ import 'package:privacyidea_authenticator/utils/parsing_utils.dart';
 import 'package:privacyidea_authenticator/utils/storage_utils.dart';
 import 'package:privacyidea_authenticator/utils/utils.dart';
 import 'package:privacyidea_authenticator/widgets/custom_texts.dart';
-import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 
 typedef GetFBTokenCallback = Future<String> Function(FirebaseConfig);
 
@@ -108,8 +106,29 @@ abstract class _TokenWidgetState extends State<TokenWidget> {
           icon: Icons.edit,
           onTap: () => _renameTokenDialog(),
         ),
+        IconSlideAction(
+          caption: _token.isLocked ? "Unlock" : "Lock", // TODO Translate
+          color: getTonedColor(Colors.grey, isDarkModeOn(context)),
+          icon: _token.isLocked ? Icons.lock_open : Icons.lock_outline,
+          onTap: _token.lockCanBeToggled
+              ? () => _changeLockStatus()
+              : null, // TODO Signal to user when this is unavailable
+        ),
       ],
     );
+  }
+
+  void _changeLockStatus() async {
+    if (_token.lockCanBeToggled) {
+      log('Changing lock status of token ${_token.label}.',
+          name: 'token_widgets.dart');
+      _token.isLocked = !_token.isLocked;
+      await _saveThisToken();
+    } else {
+      log('Lock status of token ${_token.label} can not be changed!',
+          name: 'token_widgets.dart');
+    }
+    setState(() {});
   }
 
   void _renameTokenDialog() {
@@ -697,23 +716,18 @@ class _HotpWidgetState extends _OTPTokenWidgetState {
     return Stack(
       children: <Widget>[
         ListTile(
-          title: PreferenceBuilder<bool>(
-            preference: AppSettings.of(context).streamHideOpts(),
-            builder: (context, bool hide) {
-              return HideableText(
-                text: insertCharAt(_otpValue, " ", _token.digits ~/ 2),
-                hiddenText: insertCharAt(
-                    "\u2022" * _token.digits, " ", _token.digits ~/ 2),
-                textScaleFactor: 2.2,
-                hideDuration: Duration(seconds: 4),
-                textStyle: TextStyle(
-                  fontFamily: "monospace",
-                  fontWeight: FontWeight.bold,
-                ),
+          title: HideableText(
+            text: insertCharAt(_otpValue, " ", _token.digits ~/ 2),
+            hiddenText:
+                insertCharAt("\u2022" * _token.digits, " ", _token.digits ~/ 2),
+            textScaleFactor: 2.2,
+            hideDuration: Duration(seconds: 4), // TODO Set time
+            textStyle: TextStyle(
+              fontFamily: "monospace",
+              fontWeight: FontWeight.bold,
+            ),
 //                style: Theme.of(context).textTheme.headline4, // TODO What to use?
-                enabled: hide,
-              );
-            },
+            enabled: _token.isLocked,
           ),
           subtitle: Text(
             _label,
@@ -810,23 +824,18 @@ class _TotpWidgetState extends _OTPTokenWidgetState
     return Column(
       children: <Widget>[
         ListTile(
-          title: PreferenceBuilder<bool>(
-            preference: AppSettings.of(context).streamHideOpts(),
-            builder: (context, bool hide) {
-              return HideableText(
-                text: insertCharAt(_otpValue, " ", _token.digits ~/ 2),
-                hiddenText: insertCharAt(
-                    "\u2022" * _token.digits, " ", _token.digits ~/ 2),
-                textScaleFactor: 2.2,
-                hideDuration: Duration(seconds: 4),
-                textStyle: TextStyle(
-                  fontFamily: "monospace",
-                  fontWeight: FontWeight.bold,
-                ),
+          title: HideableText(
+            text: insertCharAt(_otpValue, " ", _token.digits ~/ 2),
+            hiddenText:
+                insertCharAt("\u2022" * _token.digits, " ", _token.digits ~/ 2),
+            textScaleFactor: 2.2,
+            hideDuration: Duration(seconds: 4), // TODO Set time
+            textStyle: TextStyle(
+              fontFamily: "monospace",
+              fontWeight: FontWeight.bold,
+            ),
 //                style: Theme.of(context).textTheme.headline4, // TODO What to use?
-                enabled: hide,
-              );
-            },
+            enabled: _token.isLocked,
           ),
           subtitle: Text(
             _label,
