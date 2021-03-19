@@ -31,6 +31,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutterlifecyclehooks/flutterlifecyclehooks.dart';
 import 'package:http/http.dart';
+import 'package:local_auth/error_codes.dart' as auth_error;
+import 'package:local_auth/local_auth.dart';
 import 'package:pi_authenticator_legacy/pi_authenticator_legacy.dart';
 import 'package:pointycastle/asymmetric/api.dart';
 import 'package:privacyidea_authenticator/model/firebase_config.dart';
@@ -122,13 +124,40 @@ abstract class _TokenWidgetState extends State<TokenWidget> {
     if (_token.lockCanBeToggled) {
       log('Changing lock status of token ${_token.label}.',
           name: 'token_widgets.dart');
-      _token.isLocked = !_token.isLocked;
-      await _saveThisToken();
+
+      // TODO Check device lock // TODO Make this a function!
+      var localAuth = LocalAuthentication();
+
+      print('Is supported? ${await localAuth.isDeviceSupported()}');
+
+      bool didAuthenticate = false;
+      try {
+        didAuthenticate = await localAuth.authenticate(
+          localizedReason: 'Please authenticate to show', // TODO Translate
+        );
+      } on PlatformException catch (error, stack) {
+        switch (error.code) {
+          case auth_error.notAvailable:
+          case auth_error.passcodeNotSet:
+          case auth_error.notEnrolled:
+          case auth_error.lockedOut:
+          case auth_error.otherOperatingSystem:
+          case auth_error.permanentlyLockedOut:
+          default:
+//            Catcher.reportCheckedError(error, stack); // TODO Add this
+            throw error;
+        }
+      }
+
+      if (didAuthenticate) {
+        _token.isLocked = !_token.isLocked;
+        await _saveThisToken();
+        setState(() {});
+      }
     } else {
       log('Lock status of token ${_token.label} can not be changed!',
           name: 'token_widgets.dart');
     }
-    setState(() {});
   }
 
   void _renameTokenDialog() {
@@ -721,7 +750,8 @@ class _HotpWidgetState extends _OTPTokenWidgetState {
             hiddenText:
                 insertCharAt("\u2022" * _token.digits, " ", _token.digits ~/ 2),
             textScaleFactor: 2.2,
-            hideDuration: Duration(seconds: 4), // TODO Set time
+            hideDuration: Duration(seconds: 4),
+            // TODO Set time
             textStyle: TextStyle(
               fontFamily: "monospace",
               fontWeight: FontWeight.bold,
@@ -829,7 +859,8 @@ class _TotpWidgetState extends _OTPTokenWidgetState
             hiddenText:
                 insertCharAt("\u2022" * _token.digits, " ", _token.digits ~/ 2),
             textScaleFactor: 2.2,
-            hideDuration: Duration(seconds: 4), // TODO Set time
+            hideDuration: Duration(seconds: 4),
+            // TODO Set time
             textStyle: TextStyle(
               fontFamily: "monospace",
               fontWeight: FontWeight.bold,
