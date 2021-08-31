@@ -444,7 +444,11 @@ class _MainScreenState extends State<MainScreen> with LifecycleMixin {
                 context,
                 MaterialPageRoute(
                   builder: (context) => AddTokenManuallyScreen(),
-                )).then((newToken) => _addToken(newToken));
+                )).then((newToken) {
+              if (newToken != null) {
+                _addToken(newToken);
+              }
+            });
           } else if (value == "settings") {
             Navigator.push(
                 context,
