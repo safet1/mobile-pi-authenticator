@@ -24,7 +24,9 @@ import 'dart:typed_data';
 
 import 'package:asn1lib/asn1lib.dart';
 import 'package:pointycastle/export.dart';
+import 'package:privacyidea_authenticator/model/tokens.dart';
 import 'package:privacyidea_authenticator/utils/utils.dart';
+import 'package:uuid/uuid.dart';
 
 import 'identifiers.dart';
 
@@ -195,7 +197,7 @@ RSAPrivateKey deserializeRSAPrivateKeyPKCS1(String keyStr) {
 }
 
 /// The method returns a map that contains all the uri parameters.
-Map<String, dynamic> parseQRCodeToMap(String uriAsString) {
+Map<String, dynamic> parseOtpAuthUriToMap(String uriAsString) {
   Uri uri = Uri.parse(uriAsString);
   log(
     "Barcode is valid Uri:",
@@ -412,7 +414,7 @@ Map<String, dynamic> parseOtpAuth(Uri uri) {
     uriMap[URI_PERIOD] = period;
   }
 
-  if (is2StepURI(uri)) {
+  if (is2StepUri(uri)) {
     // Parse for 2 step roll out.
     String saltLengthAsString = uri.queryParameters["2step_salt"] ?? "10";
     String outputLengthInByteAsString =
@@ -490,7 +492,71 @@ String _parseIssuer(Uri uri) {
   return issuer ?? "";
 }
 
-bool is2StepURI(Uri uri) {
+Token buildTokenFromMap(Map<String, dynamic> uriMap) {
+  String uuid = Uuid().v4();
+  String type = uriMap[URI_TYPE];
+
+  // Push token do not need any of the other parameters.
+  if (equalsIgnoreCase(type, enumAsString(TokenTypes.PIPUSH))) {
+    return buildPushToken(uriMap, uuid);
+  }
+
+  String label = uriMap[URI_LABEL];
+  String algorithm = uriMap[URI_ALGORITHM];
+  int digits = uriMap[URI_DIGITS];
+  Uint8List secret = uriMap[URI_SECRET];
+  String issuer = uriMap[URI_ISSUER];
+
+  // uri.host -> totp or hotp
+  if (type == "hotp") {
+    return HOTPToken(
+      label: label,
+      issuer: issuer,
+      id: uuid,
+      algorithm: mapStringToAlgorithm(algorithm),
+      digits: digits,
+      secret: encodeSecretAs(secret, Encodings.base32),
+      counter: uriMap[URI_COUNTER],
+    );
+  } else if (type == "totp") {
+    return TOTPToken(
+      label: label,
+      issuer: issuer,
+      id: uuid,
+      algorithm: mapStringToAlgorithm(algorithm),
+      digits: digits,
+      secret: encodeSecretAs(secret, Encodings.base32),
+      period: uriMap[URI_PERIOD],
+    );
+  } else {
+    throw ArgumentError.value(
+        uriMap,
+        "uri",
+        "Building the token type "
+            "[$type] is not a supported right now.");
+  }
+}
+
+PushToken buildPushToken(Map<String, dynamic> uriMap, String uuid) {
+  return PushToken(
+    serial: uriMap[URI_SERIAL],
+    label: uriMap[URI_LABEL],
+    issuer: uriMap[URI_ISSUER],
+    id: uuid,
+    sslVerify: uriMap[URI_SSL_VERIFY],
+    expirationDate: DateTime.now().add(Duration(minutes: uriMap[URI_TTL])),
+    enrollmentCredentials: uriMap[URI_ENROLLMENT_CREDENTIAL],
+    url: uriMap[URI_ROLLOUT_URL],
+  );
+}
+
+bool is2StepToken(Map<String, dynamic> uriMap) {
+  return uriMap[URI_SALT_LENGTH] != null ||
+      uriMap[URI_OUTPUT_LENGTH_IN_BYTES] != null ||
+      uriMap[URI_ITERATIONS] != null;
+}
+
+bool is2StepUri(Uri uri) {
   return uri.queryParameters["2step_salt"] != null ||
       uri.queryParameters["2step_output"] != null ||
       uri.queryParameters["2step_difficulty"] != null;

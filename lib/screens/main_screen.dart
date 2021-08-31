@@ -47,11 +47,9 @@ import 'package:privacyidea_authenticator/utils/license_utils.dart';
 import 'package:privacyidea_authenticator/utils/parsing_utils.dart';
 import 'package:privacyidea_authenticator/utils/push_provider.dart';
 import 'package:privacyidea_authenticator/utils/storage_utils.dart';
-import 'package:privacyidea_authenticator/utils/utils.dart';
 import 'package:privacyidea_authenticator/widgets/token_widgets.dart';
 import 'package:privacyidea_authenticator/widgets/two_step_dialog.dart';
 import 'package:uni_links/uni_links.dart';
-import 'package:uuid/uuid.dart';
 
 import 'custom_about_screen.dart';
 
@@ -69,11 +67,66 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 class _MainScreenState extends State<MainScreen> with LifecycleMixin {
   List<Token> _tokenList = [];
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
   Timer? _pollTimer;
 
   // Used for handling links the app is registered to handle.
   StreamSubscription? _uniLinkStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _initLinkHandling();
+    _initStateAsync();
+  }
+
+  void _initStateAsync() async {
+    await PushProvider.initialize(
+      handleIncomingMessage: (RemoteMessage message) =>
+          _handleIncomingAuthRequest(message),
+      backgroundMessageHandler: _firebaseMessagingBackgroundHandler,
+    );
+    _startPollingIfEnabled();
+    await PushProvider.updateFbTokenIfChanged();
+  }
+
+  @override
+  void afterFirstRender() {
+    _showChangelogAndGuide();
+    _loadTokenList();
+  }
+
+  @override
+  void onPause() {}
+
+  @override
+  void onResume() {}
+
+  @override
+  void dispose() {
+    _pollTimer?.cancel();
+    _uniLinkStream?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _initLinkHandling() async {
+    _uniLinkStream = linkStream.listen((String? link) {
+      _handleOthAuthUri(link);
+    }, onError: (err) {
+      _showMessage(AppLocalizations.of(context)!.handlingOtpAuthLinkFailed,
+          Duration(seconds: 4));
+    });
+
+    try {
+      String? link = await getInitialLink();
+      if (link == null) {
+        return; // Do not cause an Exception here if no link exists.
+      }
+      _handleOthAuthUri(link);
+    } on PlatformException {
+      _showMessage(AppLocalizations.of(context)!.handlingOtpAuthLinkFailed,
+          Duration(seconds: 4));
+    }
+  }
 
   void _startPollingIfEnabled() {
     AppSettings.of(context).streamEnablePolling().listen(
@@ -205,26 +258,6 @@ class _MainScreenState extends State<MainScreen> with LifecycleMixin {
     }
   }
 
-  Future<void> _initLinkHandling() async {
-    _uniLinkStream = linkStream.listen((String? link) {
-      _handleOtpAuth(link);
-    }, onError: (err) {
-      _showMessage(AppLocalizations.of(context)!.handlingOtpAuthLinkFailed,
-          Duration(seconds: 4));
-    });
-
-    try {
-      String? link = await getInitialLink();
-      if (link == null) {
-        return; // Do not cause an Exception here if no link exists.
-      }
-      _handleOtpAuth(link);
-    } on PlatformException {
-      _showMessage(AppLocalizations.of(context)!.handlingOtpAuthLinkFailed,
-          Duration(seconds: 4));
-    }
-  }
-
   static Future<void> _firebaseMessagingBackgroundHandler(
       RemoteMessage message) async {
     log("Background message received.",
@@ -233,43 +266,7 @@ class _MainScreenState extends State<MainScreen> with LifecycleMixin {
         message, await StorageUtil.loadAllTokens(), true));
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _initLinkHandling();
-    _initStateAsync();
-  }
-
-  void _initStateAsync() async {
-    await PushProvider.initialize(
-      handleIncomingMessage: (RemoteMessage message) =>
-          _handleIncomingAuthRequest(message),
-      backgroundMessageHandler: _firebaseMessagingBackgroundHandler,
-    );
-    _startPollingIfEnabled();
-    await PushProvider.updateFbTokenIfChanged();
-  }
-
-  @override
-  void afterFirstRender() {
-    _showChangelogAndGuide();
-    _loadTokenList();
-  }
-
-  @override
-  void onPause() {}
-
-  @override
-  void onResume() {}
-
-  @override
-  void dispose() {
-    _pollTimer?.cancel();
-    _uniLinkStream?.cancel();
-    super.dispose();
-  }
-
-  _loadTokenList() async {
+  Future<void> _loadTokenList() async {
     List<Token> l1 = await StorageUtil.loadAllTokens();
     // Prevent the list items from skipping around on ui updates
     l1.sort((a, b) => a.id.hashCode.compareTo(b.id.hashCode));
@@ -303,7 +300,7 @@ class _MainScreenState extends State<MainScreen> with LifecycleMixin {
     );
   }
 
-  _handleOtpAuth(String? otpAuth) async {
+  void _handleOthAuthUri(String? otpAuth) async {
     if (otpAuth == null) {
       return;
     }
@@ -317,11 +314,25 @@ class _MainScreenState extends State<MainScreen> with LifecycleMixin {
     try {
       // TODO get crash report recipients from map and set in settings
       //  and for Catcher.
-      Map<String, dynamic> barcodeMap = parseQRCodeToMap(otpAuth);
+      Map<String, dynamic> uriMap = parseOtpAuthUriToMap(otpAuth);
       // AppSetting.of(context).add...
 //      Catcher.instance.updateConfig();
 
-      Token newToken = await _buildTokenFromMap(barcodeMap, Uri.parse(otpAuth));
+      if (is2StepToken(uriMap)) {
+        // Calculate the whole secret.
+        uriMap[URI_SECRET] = (await showDialog<Uint8List>(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) => TwoStepDialog(
+            iterations: uriMap[URI_ITERATIONS],
+            keyLength: uriMap[URI_OUTPUT_LENGTH_IN_BYTES],
+            saltLength: uriMap[URI_SALT_LENGTH],
+            password: uriMap[URI_SECRET],
+          ),
+        ))!;
+      }
+
+      Token newToken = buildTokenFromMap(uriMap);
 
       log(
         "Adding new token from qr-code:",
@@ -356,85 +367,12 @@ class _MainScreenState extends State<MainScreen> with LifecycleMixin {
     }
   }
 
-  _scanQRCode() async {
-    String? barcode = await Navigator.push(
+  void _scanQRCode() async {
+    String? qr = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => QRScannerScreen()),
     );
-    await _handleOtpAuth(barcode);
-  }
-
-  Future<Token> _buildTokenFromMap(Map<String, dynamic> uriMap, Uri uri) async {
-    String uuid = Uuid().v4();
-    String type = uriMap[URI_TYPE];
-
-    // Push token do not need any of the other parameters.
-    if (equalsIgnoreCase(type, enumAsString(TokenTypes.PIPUSH))) {
-      return _buildPushToken(uriMap, uuid);
-    }
-
-    String label = uriMap[URI_LABEL];
-    String algorithm = uriMap[URI_ALGORITHM];
-    int digits = uriMap[URI_DIGITS];
-    Uint8List secret = uriMap[URI_SECRET];
-    String issuer = uriMap[URI_ISSUER];
-
-    if (is2StepURI(uri)) {
-      // Calculate the whole secret.
-      secret = (await showDialog<Uint8List>(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) => TwoStepDialog(
-          iterations: uriMap[URI_ITERATIONS],
-          keyLength: uriMap[URI_OUTPUT_LENGTH_IN_BYTES],
-          saltLength: uriMap[URI_SALT_LENGTH],
-          password: secret,
-        ),
-      ))!;
-    }
-
-    // uri.host -> totp or hotp
-    if (type == "hotp") {
-      return HOTPToken(
-        label: label,
-        issuer: issuer,
-        id: uuid,
-        algorithm: mapStringToAlgorithm(algorithm),
-        digits: digits,
-        secret: encodeSecretAs(secret, Encodings.base32),
-        counter: uriMap[URI_COUNTER],
-      );
-    } else if (type == "totp") {
-      return TOTPToken(
-        label: label,
-        issuer: issuer,
-        id: uuid,
-        algorithm: mapStringToAlgorithm(algorithm),
-        digits: digits,
-        secret: encodeSecretAs(secret, Encodings.base32),
-        period: uriMap[URI_PERIOD],
-      );
-    } else {
-      throw ArgumentError.value(
-          uri,
-          "uri",
-          "Building the token type "
-              "[$type] is not a supported right now.");
-    }
-  }
-
-  Future<PushToken> _buildPushToken(
-      Map<String, dynamic> uriMap, String uuid) async {
-    return PushToken(
-      serial: uriMap[URI_SERIAL],
-      label: uriMap[URI_LABEL],
-      issuer: uriMap[URI_ISSUER],
-      id: uuid,
-      sslVerify: uriMap[URI_SSL_VERIFY],
-      expirationDate: DateTime.now().add(Duration(minutes: uriMap[URI_TTL])),
-      enrollmentCredentials: uriMap[URI_ENROLLMENT_CREDENTIAL],
-      url: uriMap[URI_ROLLOUT_URL],
-    );
+    _handleOthAuthUri(qr);
   }
 
   /// Builds the body of the screen. If any tokens supports polling,
@@ -470,6 +408,16 @@ class _MainScreenState extends State<MainScreen> with LifecycleMixin {
             },
           )
         : list;
+  }
+
+  void _addToken(Token token) async {
+    log("Adding new token:", name: "main_screen.dart", error: token);
+    await StorageUtil.saveOrReplaceToken(token);
+    _tokenList.add(token);
+
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void _removeToken(Token token) async {
@@ -538,18 +486,7 @@ class _MainScreenState extends State<MainScreen> with LifecycleMixin {
     ];
   }
 
-  _addToken(Token? newToken) {
-    log("Adding new token:", name: "main_screen.dart", error: newToken);
-    if (newToken != null) {
-      _tokenList.add(newToken);
-
-      if (mounted) {
-        setState(() {});
-      }
-    }
-  }
-
-  _showMessage(String message, Duration duration) {
+  void _showMessage(String message, Duration duration) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(message),
       duration: duration,
