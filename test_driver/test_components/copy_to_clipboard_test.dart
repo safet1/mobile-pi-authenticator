@@ -50,8 +50,8 @@ void copyToClipboardTest() {
     });
 
     test('Clean up', () async {
-      await driver!.scroll(
-          find.text("TokenName"), -500, 0, Duration(milliseconds: 100));
+      await driver!
+          .scroll(find.text("TokenName"), -500, 0, Duration(milliseconds: 100));
 
       // Delete the token.
       await driver!.tap(find.text("Delete"));
@@ -76,6 +76,8 @@ void copyToClipboardTest() {
       await driver!.tap(find.text("Paste"));
 
       await driver!.waitFor(find.text('591668'));
+
+      await driver!.tap(find.pageBack());
     });
   });
 }
