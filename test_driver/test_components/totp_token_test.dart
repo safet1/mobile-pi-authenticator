@@ -30,7 +30,7 @@ import 'package:test/test.dart';
 
 void totpTokenUpdateTest() {
   group('TOTP token update', () {
-    FlutterDriver? driver;
+    late FlutterDriver driver;
 
     // Connect to the Flutter driver before running any tests.
     setUpAll(() async {
@@ -39,38 +39,36 @@ void totpTokenUpdateTest() {
 
     // Close the connection to the driver after the tests have completed.
     tearDownAll(() async {
-      if (driver != null) {
-        driver!.close();
-      }
+      driver.close();
     });
 
     final buttonFinder = find.byType("PopupMenuButton<String>");
     final addTokenButton = find.text("Add token");
 
     test("Click the 'add' button", () async {
-      await driver!.tap(buttonFinder);
-      await driver!.tap(addTokenButton);
+      await driver.tap(buttonFinder);
+      await driver.tap(addTokenButton);
     });
 
     test("Enter name and secret", () async {
-      await driver!.tap(find.ancestor(
+      await driver.tap(find.ancestor(
           of: find.text("Name"), matching: find.byType("TextFormField")));
 
-      await driver!.enterText("TOTPTestName");
+      await driver.enterText("TOTPTestName");
 
-      await driver!.tap(find.ancestor(
+      await driver.tap(find.ancestor(
           of: find.text("Secret"), matching: find.byType("TextFormField")));
 
-      await driver!.enterText("TestSecret");
+      await driver.enterText("TestSecret");
     });
 
     test("Change algorithm", () async {
-      await driver!.tap(find.text("HOTP"));
-      await driver!.tap(find.text("TOTP"));
+      await driver.tap(find.text("HOTP"));
+      await driver.tap(find.text("TOTP"));
     });
 
     test("Click 'add token'", () async {
-      await driver!.tap(find.text("Add token"));
+      await driver.tap(find.text("Add token"));
     });
 
     test("Assert otp value gets updated", () async {
@@ -88,15 +86,15 @@ void totpTokenUpdateTest() {
 
       // We have to run this without waiting for all animations to stop
       // (the animation loops in this widget)
-      await driver!.runUnsynchronized(() async {
+      await driver.runUnsynchronized(() async {
         String rawValue = calculateTotpValue(token).padLeft(6, '0');
         String value = insertCharAt(rawValue, " ", rawValue.length ~/ 2);
         print('1. Value: $value');
 
-        await driver!.tap(find.text(value));
+        await driver.tap(find.text(value));
       });
 
-      await driver!.runUnsynchronized(() async {
+      await driver.runUnsynchronized(() async {
         // Wait until update is due.
         await Future.delayed(Duration(seconds: 32));
 
@@ -105,24 +103,24 @@ void totpTokenUpdateTest() {
 
         print('2. Value: $value');
 
-        await driver!.waitFor(find.text(value), timeout: Duration(seconds: 40));
+        await driver.waitFor(find.text(value), timeout: Duration(seconds: 40));
       });
     }, timeout: Timeout(Duration(seconds: 60)));
 
     test('Clean up', () async {
-      await driver!.runUnsynchronized(() async {
-        await driver!.scroll(
+      await driver.runUnsynchronized(() async {
+        await driver.scroll(
             find.text("TOTPTestName"), -500, 0, Duration(milliseconds: 100));
 
         // Delete the token.
-        await driver!.tap(find.text("Delete"));
+        await driver.tap(find.text("Delete"));
 
         // Wait for the dialog to open.
-        await driver!.waitFor(find.text("Confirm deletion"));
+        await driver.waitFor(find.text("Confirm deletion"));
 
-        await driver!.tap(find.text("Delete"));
+        await driver.tap(find.text("Delete"));
 
-        await driver!.waitForAbsent(find.text("TOTPTestName"));
+        await driver.waitForAbsent(find.text("TOTPTestName"));
       });
     });
   });
