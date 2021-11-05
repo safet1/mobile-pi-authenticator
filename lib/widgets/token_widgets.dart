@@ -166,7 +166,8 @@ abstract class _TokenWidgetState extends State<TokenWidget> {
             Padding(
               padding: EdgeInsets.all(5),
               child: CircleAvatar(
-                backgroundColor: Colors.red,
+                // this is a placeholder
+                backgroundColor: Colors.transparent,
                 radius: widget.avatarRadius,
               ),
             ),
@@ -677,9 +678,9 @@ class _PushWidgetState extends _TokenWidgetState with LifecycleMixin {
                   _token.label,
                   textScaleFactor: 2.5,
                   style: Theme.of(context).textTheme.subtitle2!.copyWith(
-                        // color: Theme.of(context).accentColor,
-                        // fontFamily: "monospace",
-                        // fontWeight: FontWeight.bold,
+                      // color: Theme.of(context).accentColor,
+                      // fontFamily: "monospace",
+                      // fontWeight: FontWeight.bold,
                       ),
                 ),
                 subtitle: Column(
