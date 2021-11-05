@@ -49,7 +49,6 @@ import 'package:privacyidea_authenticator/utils/parsing_utils.dart';
 import 'package:privacyidea_authenticator/utils/push_provider.dart';
 import 'package:privacyidea_authenticator/utils/storage_utils.dart';
 import 'package:privacyidea_authenticator/utils/utils.dart';
-import 'custom_texts.dart';
 
 import 'custom_texts.dart';
 
@@ -160,14 +159,42 @@ abstract class _TokenWidgetState extends State<TokenWidget> {
       ));
     }
 
-    return Slidable(
-      key: ValueKey(_token.id),
-      // This is used to only let one Slidable be open at a time.
-      controller: _slidableController,
-      actionPane: SlidableDrawerActionPane(),
-      actionExtentRatio: 0.25,
-      child: _buildTile(),
-      secondaryActions: secondaryActions,
+    return Stack(
+      children: [
+        Row(
+          children: [
+            Padding(
+              padding: EdgeInsets.all(5),
+              child: CircleAvatar(
+                backgroundColor: Colors.red,
+                radius: widget.avatarRadius,
+              ),
+            ),
+            Expanded(
+              child: Slidable(
+                key: ValueKey(_token.id),
+                // This is used to only let one Slidable be open at a time.
+                controller: _slidableController,
+                actionPane: SlidableDrawerActionPane(),
+                actionExtentRatio: 0.25,
+                child: _buildTile(),
+                secondaryActions: secondaryActions,
+              ),
+            ),
+          ],
+        ),
+        Padding(
+          padding: EdgeInsets.all(5),
+          child: CircleAvatar(
+            backgroundColor:
+                _token.avatarColor == null ? null : Color(_token.avatarColor!),
+            backgroundImage: _token.avatarPath == null
+                ? null
+                : FileImage(File(_token.avatarPath!)),
+            radius: widget.avatarRadius,
+          ),
+        ),
+      ],
     );
   }
 
@@ -645,39 +672,21 @@ class _PushWidgetState extends _TokenWidgetState with LifecycleMixin {
         children: <Widget>[
           Column(
             children: <Widget>[
-              Row(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.all(5),
-                    child: CircleAvatar(
-                      backgroundColor: _token.avatarColor == null
-                          ? null
-                          : Color(_token.avatarColor!),
-                      backgroundImage: _token.avatarPath == null
-                          ? null
-                          : FileImage(File(_token.avatarPath!)),
-                      radius: widget.avatarRadius,
-                    ),
-                  ),
-                  Expanded(
-                    child: ListTile(
-                      title: Text(
-                        _token.label,
-                        textScaleFactor: 2.5,
-                        style: Theme.of(context).textTheme.subtitle2!.copyWith(
-                              // color: Theme.of(context).accentColor,
-                              fontFamily: "monospace",
-                              fontWeight: FontWeight.bold,
-                            ),
+              ListTile(
+                title: Text(
+                  _token.label,
+                  textScaleFactor: 2.5,
+                  style: Theme.of(context).textTheme.subtitle2!.copyWith(
+                        // color: Theme.of(context).accentColor,
+                        // fontFamily: "monospace",
+                        // fontWeight: FontWeight.bold,
                       ),
-                      subtitle: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: _getSubtitle(),
-                      ),
-                    ),
-                  )
-                ],
+                ),
+                subtitle: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: _getSubtitle(),
+                ),
               ),
               Visibility(
                 // Accept / decline push auth request.
@@ -871,66 +880,50 @@ class _HotpWidgetState extends _OTPTokenWidgetState {
 
   @override
   Widget _buildNonClickableTile() {
-    return Stack(
-      children: <Widget>[
-        Row(
-          children: [
-            Padding(
-              padding: EdgeInsets.all(5),
-              child: CircleAvatar(
-                backgroundColor: _token.avatarColor == null
-                    ? null
-                    : Color(_token.avatarColor!),
-                backgroundImage: _token.avatarPath == null
-                    ? null
-                    : FileImage(File(_token.avatarPath!)),
-                radius: widget.avatarRadius,
-              ),
+    return Row(
+      children: [
+        Expanded(
+          child: ListTile(
+            title: HideableText(
+              controller: _hideableController,
+              text: insertCharAt(_otpValue, " ", _token.digits ~/ 2),
+              textScaleFactor: 2.5,
+              enabled: _token.isLocked,
+              hideDuration: Duration(seconds: 6),
+              textStyle: Theme.of(context)
+                  .textTheme
+                  .subtitle2!
+                  .copyWith(color: Theme.of(context).colorScheme.secondary),
             ),
-            Expanded(
-              child: ListTile(
-                title: HideableText(
-                  controller: _hideableController,
-                  text: insertCharAt(_otpValue, " ", _token.digits ~/ 2),
-                  textScaleFactor: 2.5,
-                  enabled: _token.isLocked,
-                  hideDuration: Duration(seconds: 6),
-                  textStyle: Theme.of(context)
-                      .textTheme
-                      .subtitle2!
-                      .copyWith(color: Theme.of(context).colorScheme.secondary),
-                ),
-                subtitle: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: _getSubtitle(),
-                ),
-              ),
+            subtitle: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: _getSubtitle(),
             ),
-            IconButton(
-              iconSize: 30,
-              icon: Container(
-                decoration: BoxDecoration(
-                  color: buttonIsDisabled
-                      ? Theme.of(context).disabledColor
-                      : Theme.of(context).colorScheme.secondary,
-                  borderRadius: BorderRadius.circular(5),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.black
-                          : Colors.grey,
-                      blurRadius: 1.0,
-                      offset: Offset(1, 1),
-                    )
-                  ],
-                ),
-                child: Icon(Icons.navigate_next_rounded),
-              ),
-              onPressed: buttonIsDisabled ? null : () => _updateOtpValue(),
-            )
-          ],
+          ),
         ),
+        IconButton(
+          iconSize: 30,
+          icon: Container(
+            decoration: BoxDecoration(
+              color: buttonIsDisabled
+                  ? Theme.of(context).disabledColor
+                  : Theme.of(context).colorScheme.secondary,
+              borderRadius: BorderRadius.circular(5),
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.black
+                      : Colors.grey,
+                  blurRadius: 1.0,
+                  offset: Offset(1, 1),
+                )
+              ],
+            ),
+            child: Icon(Icons.navigate_next_rounded),
+          ),
+          onPressed: buttonIsDisabled ? null : () => _updateOtpValue(),
+        )
       ],
     );
   }
@@ -1003,41 +996,23 @@ class _TotpWidgetState extends _OTPTokenWidgetState
   Widget _buildNonClickableTile() {
     return Column(
       children: <Widget>[
-        Row(
-          children: [
-            Padding(
-              padding: EdgeInsets.all(5),
-              child: CircleAvatar(
-                backgroundColor: _token.avatarColor == null
-                    ? null
-                    : Color(_token.avatarColor!),
-                backgroundImage: _token.avatarPath == null
-                    ? null
-                    : FileImage(File(_token.avatarPath!)),
-                radius: widget.avatarRadius,
-              ),
-            ),
-            Expanded(
-              child: ListTile(
-                title: HideableText(
-                  controller: _hideableController,
-                  text: insertCharAt(_otpValue, " ", _token.digits ~/ 2),
-                  textScaleFactor: 2.5,
-                  enabled: _token.isLocked,
-                  hideDuration: Duration(seconds: 6),
-                  textStyle: Theme.of(context)
-                      .textTheme
-                      .subtitle2!
-                      .copyWith(color: Theme.of(context).colorScheme.secondary),
-                ),
-                subtitle: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: _getSubtitle(),
-                ),
-              ),
-            ),
-          ],
+        ListTile(
+          title: HideableText(
+            controller: _hideableController,
+            text: insertCharAt(_otpValue, " ", _token.digits ~/ 2),
+            textScaleFactor: 2.5,
+            enabled: _token.isLocked,
+            hideDuration: Duration(seconds: 6),
+            textStyle: Theme.of(context)
+                .textTheme
+                .subtitle2!
+                .copyWith(color: Theme.of(context).colorScheme.secondary),
+          ),
+          subtitle: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: _getSubtitle(),
+          ),
         ),
         LinearProgressIndicator(
           value: _controller.value,
