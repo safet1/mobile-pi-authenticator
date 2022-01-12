@@ -28,7 +28,7 @@ import 'package:privacyidea_authenticator/screens/changelog_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class CustomLicenseScreen extends StatefulWidget {
-  final String applicationName = 'privacyIDEA Authenticator';
+  final String applicationName = 'Safe-T Authenticator';
   final Widget applicationIcon = SvgPicture.asset(
     'res/logo/app_logo_light.svg',
     width: 330,

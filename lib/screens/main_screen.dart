@@ -204,12 +204,12 @@ class _MainScreenState extends State<MainScreen> with LifecycleMixin {
       }
 
       // Show the guide screen in front of the changelog -> load it last
-      if (AppSettings.of(context).showGuideOnStart) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => GuideScreen()),
-        );
-      }
+      // if (AppSettings.of(context).showGuideOnStart) {
+      //   Navigator.push(
+      //     context,
+      //     MaterialPageRoute(builder: (context) => GuideScreen()),
+      //   );
+      // }
     }
   }
 
@@ -458,8 +458,9 @@ class _MainScreenState extends State<MainScreen> with LifecycleMixin {
       child: ListView.separated(
           itemBuilder: (context, index) {
             Token token = _tokenList[index];
-            return TokenWidget(token,
-                onDeleteClicked: () => _removeToken(token));
+            return SvgPicture.asset('res/logo/app_logo_light.svg');
+            // return TokenWidget(token,
+            //     onDeleteClicked: () => _removeToken(token));
           },
           separatorBuilder: (context, index) {
             return Divider();
@@ -533,13 +534,13 @@ class _MainScreenState extends State<MainScreen> with LifecycleMixin {
                 MaterialPageRoute(
                   builder: (context) => SettingsScreen(),
                 )).then((_) => _loadTokenList());
-          } else if (value == 'guide') {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => GuideScreen(),
-              ),
-            );
+          // } else if (value == 'guide') {
+          //   Navigator.push(
+          //     context,
+          //     MaterialPageRoute(
+          //       builder: (context) => GuideScreen(),
+          //     ),
+          //   );
           }
         },
         elevation: 5.0,
@@ -567,14 +568,14 @@ class _MainScreenState extends State<MainScreen> with LifecycleMixin {
               text: Text(AppLocalizations.of(context)!.about),
             ),
           ),
-          PopupMenuDivider(),
-          PopupMenuItem<String>(
-            value: 'guide',
-            child: MenuItemWithIcon(
-              icon: Icon(Icons.help_outline),
-              text: Text(AppLocalizations.of(context)!.guide),
-            ),
-          ),
+          // PopupMenuDivider(),
+          // PopupMenuItem<String>(
+          //   value: 'guide',
+          //   child: MenuItemWithIcon(
+          //     icon: Icon(Icons.help_outline),
+          //     text: Text(AppLocalizations.of(context)!.guide),
+          //   ),
+          // ),
         ],
       ),
     ];
