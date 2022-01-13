@@ -1,34 +1,77 @@
 {
   "project_info": {
-    "project_number": "838329625695",
-    "project_id": "privacyidea-4c8c1",
-    "storage_bucket": "privacyidea-4c8c1.appspot.com"
+    "project_number": "187067775165",
+    "project_id": "safe-t-data",
+    "storage_bucket": "safe-t-data.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:838329625695:android:b2c30ebc37698bc3243fea",
+        "mobilesdk_app_id": "1:187067775165:android:68ef6cda56786cdeff1fd4",
         "android_client_info": {
-          "package_name": "it.netknights.piauthenticator"
+          "package_name": "com.safet.authenticator"
         }
       },
       "oauth_client": [
         {
-          "client_id": "838329625695-sb84hi21ds91m1afd7hta7rq5arr7ck9.apps.googleusercontent.com",
+          "client_id": "187067775165-bv4nl318ikn06ciu4e4k7sq870b01ad1.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCU_OYNBRAHPsgR4X7jlikxIozw6EwibH4"
+          "current_key": "AIzaSyAPiFtTwlaJKx1_9UuLGpSXOUZ9nx7wbGs"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "838329625695-sb84hi21ds91m1afd7hta7rq5arr7ck9.apps.googleusercontent.com",
+              "client_id": "187067775165-bv4nl318ikn06ciu4e4k7sq870b01ad1.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "187067775165-fj9rshufek6k4lgue8infurstqrq3vc3.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.safetdata.zonezero"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:187067775165:android:508e109e7150e413ff1fd4",
+        "android_client_info": {
+          "package_name": "com.safetdata.zonezero"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "187067775165-bv4nl318ikn06ciu4e4k7sq870b01ad1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPiFtTwlaJKx1_9UuLGpSXOUZ9nx7wbGs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "187067775165-bv4nl318ikn06ciu4e4k7sq870b01ad1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "187067775165-fj9rshufek6k4lgue8infurstqrq3vc3.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.safetdata.zonezero"
+              }
             }
           ]
         }

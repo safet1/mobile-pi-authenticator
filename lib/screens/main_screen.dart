@@ -458,9 +458,8 @@ class _MainScreenState extends State<MainScreen> with LifecycleMixin {
       child: ListView.separated(
           itemBuilder: (context, index) {
             Token token = _tokenList[index];
-            return SvgPicture.asset('res/logo/app_logo_light.svg');
-            // return TokenWidget(token,
-            //     onDeleteClicked: () => _removeToken(token));
+            return TokenWidget(token,
+                onDeleteClicked: () => _removeToken(token));
           },
           separatorBuilder: (context, index) {
             return Divider();
